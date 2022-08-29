@@ -3,5 +3,12 @@
 }
 
 #content {
-    display: flex;
+}
+
+.tox-notifications-container {
+    display: none !important;
+}
+
+.note-card .dropdown-toggle::after {
+    display: none;
 }
