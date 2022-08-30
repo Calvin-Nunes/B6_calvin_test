@@ -1,4 +1,4 @@
-import { buildNotesList, renderSingleAddNote, getNotes } from './notes'
+import { buildNotesList, renderAddNoteButtonCard, getNotes } from './notes'
 
 export function firstRender() {
     refresh()
@@ -11,5 +11,5 @@ export function refresh() {
         buildNotesList()
     }
 
-    renderSingleAddNote()
+    renderAddNoteButtonCard()
 }

@@ -1,14 +1,59 @@
-.main {
-    padding: 2rem;
+body {
+    background: linear-gradient(#fde0c944, #e0b8eb44);
 }
 
-#content {
+.main {
+    display: flex;
+    flex-direction: column;
+    padding: 2rem;
+    min-height: 100vh;
 }
 
 .tox-notifications-container {
     display: none !important;
 }
 
-.note-card .dropdown-toggle::after {
+.block-add-note {
+    display: flex;
+    border: 1px dashed gray;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+    font-size: 24px;
+}
+
+.block-add-note:hover {
+    cursor: pointer;
+    background-color: rgba(255, 110, 0, 0.1);
+    transition: all 0.4s;
+}
+
+.block-add-note .add-note-title {
     display: none;
+}
+
+.no-notes-card .block-add-note .add-note-title {
+    display: block;
+    font-size: 32px;
+    margin-left: 5px;
+}
+
+.no-notes-card {
+    display: flex;
+}
+
+.no-notes-card .note-card {
+    width: 100%;
+}
+
+.form-input-holder {
+    margin: 5px 0;
+}
+
+.modal-footer {
+    margin-top: 10px;
+}
+
+.modal-footer button {
+    margin: 0 4px;
 }

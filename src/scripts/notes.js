@@ -29,7 +29,6 @@ export function buildNotesList() {
     let mainContainer = document.querySelector('#content')
 
     for (let note of storedNotes) {
-        note.date = new Date(note.date)
         createNoteTicket(note, mainContainer)
     }
 }
@@ -37,19 +36,18 @@ export function buildNotesList() {
 function createNoteTicket(note, parentElem) {
     const elemId = `note-${note.id}`
 
-    const noteCard = createElem('div', 'note-card card col-3 col-md-4 col-sm-12 ', parentElem)
+    const columnElem = createElem('div', 'col-12 col-md-4 col-lg-3', parentElem)
+
+    const noteCard = createElem('div', 'note-card card', columnElem)
     noteCard.id = elemId
+    noteCard.onclick = onClickNote.bind(this, note)
 
-    let noteTitle = createElem('h3', 'note-title', noteCard)
-    noteTitle.innerText = note.title
-
-    let noteSubtitle = createElem('h6', 'note-subtitle', noteCard)
-    noteSubtitle.innerText = note.subtitle
+    createElem('h3', 'note-title', noteCard, note.title)
+    createElem('h6', 'note-subtitle', noteCard, note.subtitle)
 
     const cardBottom = createElem('div', 'note-footer', noteCard)
 
-    let noteDate = createElem('span', 'note-date', cardBottom)
-    noteDate.innerText = `${note.date.getDate()} ${note.date.getMonth() + 1} ${note.date.getFullYear()}`
+    createElem('span', 'note-date', cardBottom, dateToDisplay(note.date))
 
     //note options button
     let dropdownBox = createElem('div', 'dropdown', cardBottom)
@@ -62,22 +60,23 @@ function createNoteTicket(note, parentElem) {
     let optionsMenu = createElem('ul', 'dropdown-menu', dropdownBox)
     optionsMenu.id = `options-${elemId}`
 
-    let editOption = createElem('li', 'note-option', optionsMenu)
-    editOption.innerText = 'Edit'
+    let editOption = createElem('li', 'note-option', optionsMenu, 'Edit')
     editOption.onclick = onClickEditNote.bind(this, note.id)
 
-    let deleteOption = createElem('li', 'note-option', optionsMenu)
-    deleteOption.innerText = 'Delete'
-    editOption.onclick = onClickDeleteNote.bind(this, note.id)
+    let deleteOption = createElem('li', 'note-option', optionsMenu, 'Delete')
+    deleteOption.onclick = onClickDeleteNote.bind(this, note.id)
 }
 
-export function renderSingleAddNote() {
+export function renderAddNoteButtonCard() {
     let mainContainer = document.querySelector('#content')
 
-    let containerAddNoteCard = createElem('div', `card ${storedNotes.length === 0 ?
+    let columnElem = createElem('div', `${storedNotes.length === 0 ?
         'no-notes-card' :
-        'col-3 col-md-4 col-sm-12'
-        }`)
+        'col-12 col-md-4 col-lg-3'
+        }`
+    )
+
+    let containerAddNoteCard = createElem('div', 'card note-card', columnElem)
     containerAddNoteCard.onclick = onClickAddNote
 
     let cardInnerElement = createElem('div', 'block-add-note', containerAddNoteCard)
@@ -86,10 +85,11 @@ export function renderSingleAddNote() {
     let addNoteTitle = createElem('span', 'add-note-title', cardInnerElement)
     addNoteTitle.innerText = 'Add new note'
 
-    mainContainer.prepend(containerAddNoteCard)
+    mainContainer.prepend(columnElem)
 }
 
-function openNoteOptions(note) {
+function openNoteOptions(note, ev) {
+    ev.stopPropagation()
     selectedNote = note
 }
 
@@ -98,7 +98,8 @@ function onClickAddNote() {
     openAddNodeModal()
 }
 
-function onClickEditNote(noteId) {
+function onClickEditNote(noteId, ev) {
+    ev.stopPropagation()
     selectedNote = storedNotes.find((n) => n.id === noteId)
 
     if (selectedNote) {
@@ -106,7 +107,8 @@ function onClickEditNote(noteId) {
     }
 }
 
-function onClickDeleteNote(noteId) {
+function onClickDeleteNote(noteId, ev) {
+    ev.stopPropagation()
     if (storedNotes) {
         const deletionIndex = storedNotes.findIndex((n) => n.id === noteId)
 
@@ -129,6 +131,9 @@ function openAddNodeModal() {
 
     const dialogBox = createElem('div', 'dialog-content-box')
 
+    let dialogTitle = createElem('h2', '', dialogBox)
+    dialogTitle.innerText = "Add/Edit Note"
+
     //create the form
     const noteForm = createElem('form', 'note-form', dialogBox)
 
@@ -148,26 +153,7 @@ function openAddNodeModal() {
 
     let confirmButton = createElem('button', 'btn btn-danger', dialogFooter)
     createElem('i', 'bi-plus-circle', confirmButton)
-    confirmButton.innerHTML += 'Add task'
-
-    //generate the modal
-    noteModal = new tingle.modal({
-        title: 'Add/Edit Note',
-        footer: false,
-        closeMethods: ['overlay', 'escape'],
-    })
-
-    noteModal.setContent(dialogBox)
-
-    //create markdown editor
-    const markdownEditor = tinymce.init({
-        selector: '.note-form-editor',
-        menubar: false,
-        toolbar: 'undo redo | bold italic | foreColor backColor | alignleft aligncenter alignright alignjustify | outdent indent'
-    });
-
-
-    noteModal.open()
+    confirmButton.innerHTML += 'Confirm'
 
     //add listener to footer buttons
     cancelButton.onclick = () => noteModal.close()
@@ -176,6 +162,27 @@ function openAddNodeModal() {
         title: titleInput.input,
         subtitle: subtitleInput.input
     })
+
+    //generate the modal
+    noteModal = new tingle.modal({
+        footer: false,
+        closeMethods: ['overlay', 'escape'],
+    })
+
+    noteModal.setContent(dialogBox)
+    noteModal.open()
+
+    //create markdown editor after dialog is on DOM
+    tinymce.init({
+        selector: '.note-form-editor',
+        menubar: false,
+        setup: function (editor) {
+            editor.on('init', (e) => {
+                editor.setContent(selectedNote.content);
+            });
+        },
+        toolbar: 'undo redo | bold italic | foreColor backColor | alignleft aligncenter alignright alignjustify | outdent indent'
+    });
 }
 
 function processNoteData(controls) {
@@ -188,13 +195,21 @@ function processNoteData(controls) {
     selectedNote.content = tinymce.activeEditor.getContent()
     selectedNote.date = new Date()
 
-    if (selectedNote.id) {
-        confirmNoteEdit()
-    } else {
-        addNewNote()
-    }
+    if (validateData(selectedNote)) {
 
-    selectedNote = null
+        if (selectedNote.id) {
+            confirmNoteEdit()
+        } else {
+            addNewNote()
+        }
+
+        selectedNote = null
+    }
+}
+
+function validateData(noteData) {
+    //TODO - validate if fields (title and content are filled)
+    return true
 }
 
 function addNewNote() {
@@ -217,6 +232,31 @@ function confirmNoteEdit() {
     }
 }
 
+function onClickNote(note, ev) {
+    ev.stopPropagation()
+    selectedNote = note
+    showNoteDialog()
+}
+
+function showNoteDialog() {
+    if (selectedNote) {
+        noteModal = new tingle.modal({
+            footer: false,
+            onClose: () => noteModal = null
+        })
+
+        let noteDisplayer = createElem('div', 'note-displayer')
+
+        createElem('h1', 'note-title', noteDisplayer, selectedNote.title)
+        createElem('h3', 'note-subtitle', noteDisplayer, selectedNote.subtitle)
+        createElem('div', 'note-content', noteDisplayer, selectedNote.content)
+        createElem('div', 'note-date', noteDisplayer, dateToDisplay(selectedNote.date, true))
+
+        noteModal.setContent(noteDisplayer)
+        noteModal.open()
+    }
+}
+
 function saveNotes() {
     storedNotes.sort((a, b) => Number(a.id) - Number(b.id))
 
@@ -234,4 +274,30 @@ function getNewId() {
     }
 
     return 1
+}
+
+function dateToDisplay(date, showHours) {
+    if (!(date instanceof Date)) {
+        date = new Date(date)
+    }
+
+    let day = date.getDate()
+    let month = date.getMonth() + 1
+    let year = date.getFullYear()
+
+    if (day < 10) {
+        day = '0' + day
+    }
+
+    if (month < 10) {
+        month = '0' + month
+    }
+
+    let display = `${day} ${month} ${year}`
+
+    if (showHours) {
+        display += ' ' + date.toLocaleTimeString()
+    }
+
+    return display
 }

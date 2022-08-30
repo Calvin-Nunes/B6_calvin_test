@@ -1,6 +1,6 @@
 
 
-function createElem(elemType, classes, parent) {
+function createElem(elemType, classes, parent, htmlContent) {
     let el
     if (elemType) {
         el = document.createElement(elemType)
@@ -8,6 +8,10 @@ function createElem(elemType, classes, parent) {
 
         if (parent && parent instanceof HTMLElement) {
             parent.appendChild(el)
+        }
+
+        if (htmlContent) {
+            el.innerHTML = htmlContent
         }
     }
 
@@ -39,4 +43,4 @@ function createInput(label, id, value) {
 }
 
 
-export { createElem, createInput}
+export { createElem, createInput }

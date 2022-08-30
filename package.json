@@ -3,12 +3,12 @@
     "version": "1.0.0",
     "description": "",
     "private": true,
+    "author": "Calvin Nunes",
+    "license": "ISC",
     "scripts": {
         "build": "webpack",
         "dev": "webpack serve --open"
     },
-    "author": "Calvin Nunes",
-    "license": "ISC",
     "dependencies": {
         "bootstrap": "^5.2.0",
         "bootstrap-icons": "^1.9.1",
